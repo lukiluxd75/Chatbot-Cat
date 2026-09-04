@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función para agregar un mensaje al UI
     function appendMessage(role, content) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = `flex items-start gap-3 w-[85%] animate-slide-down ${role === 'user' ? 'self-end flex-row-reverse' : ''}`;
+        messageDiv.className = `flex items-start gap-3 max-w-[85%] animate-slide-down ${role === 'user' ? 'self-end flex-row-reverse' : ''}`;
         
         const avatar = document.createElement('div');
         if (role === 'user') {
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showTypingIndicator() {
         const typingDiv = document.createElement('div');
         typingDiv.id = 'typing-indicator';
-        typingDiv.className = 'flex items-start gap-3 w-[85%] animate-slide-down';
+        typingDiv.className = 'flex items-start gap-3 max-w-[85%] animate-slide-down';
         
         typingDiv.innerHTML = `
             <div class="w-8 h-8 rounded-full bg-white flex-shrink-0 flex items-center justify-center mt-1 border border-accent-200 overflow-hidden shadow-sm">
