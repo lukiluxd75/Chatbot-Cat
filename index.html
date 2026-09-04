@@ -29,32 +29,40 @@
                 <img src="assets/branding/logo-gamc-cocha.png" alt="GAMC Logo" class="w-10 h-10 object-contain">
             </div>
             <div>
-                <h1 class="font-bold text-xl">Asistente Virtual</h1>
-                <p class="text-haze-300 text-sm">Consultas de Trámites y Requisitos</p>
+                <h1 class="font-bold text-xl">Asistente Catastral</h1>
+                <p class="text-haze-300 text-sm">Consultas de Trámites Catastrales</p>
             </div>
         </div>
 
-        <!-- Chat Area -->
-        <div id="chat-container" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 chat-scroll bg-accent-50" style="background-image: url('assets/watermark/cocha-skyline-marca-agua.png'); background-repeat: no-repeat; background-position: bottom center; background-size: 100% auto; background-blend-mode: color-burn; background-attachment: local;">
-            <!-- Mensaje de bienvenida -->
-            <div class="flex items-start gap-3 w-[85%]">
-                <div class="w-8 h-8 rounded-full bg-white flex-shrink-0 flex items-center justify-center mt-1 border border-accent-200 overflow-hidden shadow-sm">
-                    <img src="assets/branding/logo-gamc-cocha.png" alt="IA" class="w-full h-full object-contain p-1">
-                </div>
-                <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-graphite-950 border border-accent-200">
-                    <p>¡Hola! Soy el asistente virtual del GAMC. Estoy aquí para ayudarte con información sobre trámites, requisitos y papeles faltantes. ¿En qué te puedo ayudar hoy?</p>
+        <!-- Chat Area Wrapper -->
+        <div class="flex-1 relative overflow-hidden flex flex-col bg-accent-50">
+            <!-- Watermark Background -->
+            <div class="absolute inset-x-0 bottom-0 z-0 opacity-50 pointer-events-none flex justify-center">
+                <img src="assets/watermark/cocha-skyline-marca-agua.png" class="w-full h-auto" alt="">
+            </div>
+            
+            <!-- Chat Messages -->
+            <div id="chat-container" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 chat-scroll relative z-10">
+                <!-- Mensaje de bienvenida -->
+                <div class="flex items-start gap-3 w-[85%]">
+                    <div class="w-8 h-8 rounded-full bg-white flex-shrink-0 flex items-center justify-center mt-1 border border-accent-200 overflow-hidden shadow-sm">
+                        <img src="assets/branding/logo-gamc-cocha.png" alt="IA" class="w-full h-full object-contain p-1">
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-graphite-950 border border-accent-200">
+                        <p>¡Hola! Soy el asistente catastral del GAMC. Estoy aquí para ayudarte con información sobre trámites como certificados catastrales, visación de planos, avalúos y más. ¿En qué te puedo ayudar hoy?</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Input Area -->
-        <div class="p-4 bg-white border-t border-accent-200">
+        <div class="p-4 bg-white border-t border-accent-200 relative z-10">
             <form id="chat-form" class="flex gap-2 relative">
                 <input 
                     type="text" 
                     id="user-input" 
                     class="flex-1 bg-accent-50 border border-haze-300 rounded-full px-5 py-3 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-200 transition-all text-graphite-950 placeholder-haze-400"
-                    placeholder="Ej. ¿Qué requisitos necesito para licencia de funcionamiento?"
+                    placeholder="Ej. ¿Qué requisitos necesito para el certificado catastral?"
                     autocomplete="off"
                     required
                 >
