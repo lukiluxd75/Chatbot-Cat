@@ -24,7 +24,7 @@ class ChatRequest(BaseModel):
     messages: list[Message]
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
-DEFAULT_MODEL = "gemma3:latest"
+DEFAULT_MODEL = "gemma4:e4b"
 
 # Prompt de sistema para guiar el comportamiento del asistente
 SYSTEM_PROMPT = """Eres el Asistente Catastral experto en trámites y requisitos del Gobierno Autónomo Municipal de Cochabamba (GAMC).

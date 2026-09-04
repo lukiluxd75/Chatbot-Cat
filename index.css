@@ -127,3 +127,94 @@ body {
 .zoomable-crop .ReactCrop__child-wrapper {
   overflow: visible;
 }
+
+/* Animated gradient background */
+.bg-animated-gradient {
+  background-size: 200% 200%;
+  animation: gradientMove 15s ease infinite;
+}
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+/* Glassmorphism */
+.glass-header {
+  background: rgba(38, 21, 74, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+/* Message entrance animations */
+.animate-slide-up-stagger {
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+/* Typing indicator wave */
+.wave-dot {
+  animation: wave 1.2s linear infinite;
+}
+@keyframes wave {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+/* Micro-interactions */
+.suggestion-chip {
+  transition: all 0.2s ease;
+}
+.suggestion-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+.send-btn-glow {
+  transition: all 0.2s ease;
+}
+.send-btn-glow:hover:not(:disabled) {
+  box-shadow: 0 0 12px rgba(0, 158, 208, 0.6);
+}
+.input-focus-glow:focus {
+  box-shadow: 0 0 0 3px rgba(196, 231, 244, 0.5);
+}
+.hover-scale-logo {
+  transition: transform 0.2s ease;
+}
+.hover-scale-logo:hover {
+  transform: scale(1.05);
+}
+/* Status indicator pulse */
+.pulse-status {
+  animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes ping-slow {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+/* Logo header pulse */
+.animate-pulse-logo {
+  animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(71, 180, 216, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(71, 180, 216, 0); }
+}
+/* Message fade out */
+.message-fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}

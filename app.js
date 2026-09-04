@@ -3,18 +3,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const chatContainer = document.getElementById('chat-container');
     const sendBtn = document.getElementById('send-btn');
+    const charCounter = document.getElementById('char-counter');
+    const charCount = document.getElementById('char-count');
+    const suggestionChips = document.querySelectorAll('.suggestion-chip');
 
     // Estado del historial de mensajes
     let messagesHistory = [];
 
+    // Smooth scroll al inicializar
+    document.documentElement.style.scrollBehavior = 'smooth';
+
+    // Manejar cambios en el input
+    userInput.addEventListener('input', () => {
+        const val = userInput.value.trim();
+        sendBtn.disabled = val.length === 0;
+        
+        // Character counter
+        charCount.textContent = userInput.value.length;
+        if (userInput.value.length > 0) {
+            charCounter.style.opacity = '1';
+        } else {
+            charCounter.style.opacity = '0';
+        }
+    });
+
+    // Manejar chips de sugerencia
+    suggestionChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            userInput.value = chip.textContent;
+            // Trigger input event to enable button and update counter
+            userInput.dispatchEvent(new Event('input'));
+            // Enviar automáticamente al hacer click en el chip
+            chatForm.requestSubmit();
+            // Ocultar chips de sugerencia con animación
+            const chipsContainer = chip.closest('.flex.flex-wrap');
+            if (chipsContainer) {
+                chipsContainer.classList.add('message-fade-out');
+                setTimeout(() => chipsContainer.remove(), 300);
+            }
+        });
+    });
+
     // Función para agregar un mensaje al UI
     function appendMessage(role, content) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = `flex items-start gap-3 max-w-[85%] animate-slide-down ${role === 'user' ? 'self-end flex-row-reverse' : ''}`;
+        const isUser = role === 'user';
+        
+        messageDiv.className = `flex items-start gap-3 max-w-[85%] ${isUser ? 'self-end flex-row-reverse animate-slide-in-right' : 'animate-slide-up-stagger'}`;
         
         const avatar = document.createElement('div');
-        if (role === 'user') {
-            avatar.className = 'w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold mt-1 bg-brand-900';
+        if (isUser) {
+            avatar.className = 'w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold mt-1 bg-brand-900 shadow-sm';
             avatar.textContent = 'TÚ';
         } else {
             avatar.className = 'w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center mt-1 bg-white border border-accent-200 overflow-hidden shadow-sm';
@@ -22,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const bubble = document.createElement('div');
-        if (role === 'user') {
+        if (isUser) {
             bubble.className = 'bg-brand-900 text-white p-4 rounded-2xl rounded-tr-none shadow-sm';
         } else {
             bubble.className = 'bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-graphite-950 border border-accent-200';
@@ -35,35 +74,46 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDiv.appendChild(bubble);
         chatContainer.appendChild(messageDiv);
         
-        // Scroll al fondo
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+        // Scroll al fondo suave
+        setTimeout(() => {
+            chatContainer.scrollTo({
+                top: chatContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 10);
     }
 
     // Función para mostrar indicador de carga
     function showTypingIndicator() {
         const typingDiv = document.createElement('div');
         typingDiv.id = 'typing-indicator';
-        typingDiv.className = 'flex items-start gap-3 max-w-[85%] animate-slide-down';
+        typingDiv.className = 'flex items-start gap-3 max-w-[85%] animate-slide-up-stagger';
         
         typingDiv.innerHTML = `
             <div class="w-8 h-8 rounded-full bg-white flex-shrink-0 flex items-center justify-center mt-1 border border-accent-200 overflow-hidden shadow-sm">
                 <img src="assets/branding/logo-gamc-cocha.png" alt="IA" class="w-full h-full object-contain p-1">
             </div>
-            <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm flex gap-1 items-center border border-accent-200 h-[52px]">
-                <div class="w-2 h-2 bg-haze-400 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
-                <div class="w-2 h-2 bg-haze-400 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
-                <div class="w-2 h-2 bg-haze-400 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+            <div class="bg-white px-4 py-3 rounded-2xl rounded-tl-none shadow-sm flex gap-1.5 items-center border border-accent-200 h-[48px]">
+                <div class="w-2 h-2 bg-haze-400 rounded-full wave-dot" style="animation-delay: 0s"></div>
+                <div class="w-2 h-2 bg-haze-400 rounded-full wave-dot" style="animation-delay: 0.2s"></div>
+                <div class="w-2 h-2 bg-haze-400 rounded-full wave-dot" style="animation-delay: 0.4s"></div>
             </div>
         `;
         chatContainer.appendChild(typingDiv);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+        chatContainer.scrollTo({
+            top: chatContainer.scrollHeight,
+            behavior: 'smooth'
+        });
     }
 
     // Función para remover indicador de carga
     function removeTypingIndicator() {
         const typingDiv = document.getElementById('typing-indicator');
         if (typingDiv) {
-            typingDiv.remove();
+            typingDiv.classList.add('message-fade-out');
+            setTimeout(() => {
+                typingDiv.remove();
+            }, 300); // Wait for animation to finish
         }
     }
 
@@ -74,8 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const message = userInput.value.trim();
         if (!message) return;
 
-        // Limpiar input y agregar al UI
+        // Limpiar input y resetear UI
         userInput.value = '';
+        userInput.dispatchEvent(new Event('input')); // disable button
         appendMessage('user', message);
         
         // Agregar al historial
@@ -83,8 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Bloquear input
         userInput.disabled = true;
-        sendBtn.disabled = true;
-        sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
         
         showTypingIndicator();
 
@@ -108,18 +157,23 @@ document.addEventListener('DOMContentLoaded', () => {
             messagesHistory.push({ role: 'assistant', content: botMessage });
             
             removeTypingIndicator();
-            appendMessage('assistant', botMessage);
+            // Pequeño delay para permitir que el fade-out se vea antes de añadir el nuevo mensaje
+            setTimeout(() => {
+                appendMessage('assistant', botMessage);
+            }, 300);
 
         } catch (error) {
             console.error('Error:', error);
             removeTypingIndicator();
-            appendMessage('assistant', 'Lo siento, ha ocurrido un error al conectar con el servidor local. Asegúrate de que Ollama y el backend estén corriendo.');
+            setTimeout(() => {
+                appendMessage('assistant', 'Lo siento, ha ocurrido un error al conectar con el servidor local. Asegúrate de que Ollama y el backend estén corriendo.');
+            }, 300);
         } finally {
             // Desbloquear input
             userInput.disabled = false;
-            sendBtn.disabled = false;
-            sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            userInput.focus();
+            setTimeout(() => {
+                userInput.focus();
+            }, 350);
         }
     });
 });

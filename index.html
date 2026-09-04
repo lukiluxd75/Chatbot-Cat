@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistente de Trámites GAMC</title>
+    <!-- Google Fonts import for Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="output.css">
     <style>
         /* Custom scrollbar for chat */
@@ -19,18 +23,24 @@
         }
     </style>
 </head>
-<body class="h-screen w-full flex items-center justify-center p-4">
+<body class="h-screen w-full flex items-center justify-center p-4 bg-animated-gradient">
     
     <div class="animate-card-in bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[90vh]">
         
         <!-- Header -->
-        <div class="bg-brand-900 text-white p-5 flex items-center gap-4 shadow-md z-10">
-            <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-accent-500 shadow-sm">
+        <div class="glass-header text-white p-5 flex items-center gap-4 shadow-md z-10">
+            <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-accent-500 animate-pulse-logo hover-scale-logo">
                 <img src="assets/branding/logo-gamc-cocha.png" alt="GAMC Logo" class="w-10 h-10 object-contain">
             </div>
-            <div>
-                <h1 class="font-bold text-xl">Asistente Catastral</h1>
-                <p class="text-haze-300 text-sm">Consultas de Trámites Catastrales</p>
+            <div class="flex-1">
+                <h1 class="font-bold text-xl flex items-center gap-2">
+                    Asistente Catastral
+                    <span class="relative flex h-3 w-3">
+                      <span class="pulse-status absolute inline-flex h-full w-full rounded-full bg-state-success opacity-75" style="background-color: #72ae17;"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-state-success" style="background-color: #72ae17;"></span>
+                    </span>
+                </h1>
+                <p class="text-accent-200 text-sm opacity-90">Consultas de Trámites Catastrales</p>
             </div>
         </div>
 
@@ -38,36 +48,51 @@
         <div class="flex-1 overflow-hidden flex flex-col bg-accent-50" style="background-image: url('assets/watermark/cocha-skyline-marca-agua.png'); background-repeat: no-repeat; background-position: bottom center; background-size: contain;">
             
             <!-- Chat Messages -->
-            <div id="chat-container" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 chat-scroll">
+            <div id="chat-container" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 chat-scroll pb-2">
                 <!-- Mensaje de bienvenida -->
-                <div class="flex items-start gap-3 max-w-[85%]">
+                <div class="flex items-start gap-3 max-w-[85%] animate-slide-up-stagger">
                     <div class="w-8 h-8 rounded-full bg-white flex-shrink-0 flex items-center justify-center mt-1 border border-accent-200 overflow-hidden shadow-sm">
                         <img src="assets/branding/logo-gamc-cocha.png" alt="IA" class="w-full h-full object-contain p-1">
                     </div>
                     <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-graphite-950 border border-accent-200">
-                        <p>¡Hola! Soy el asistente catastral del GAMC. Estoy aquí para ayudarte con información sobre trámites como certificados catastrales, visación de planos, avalúos y más. ¿En qué te puedo ayudar hoy?</p>
+                        <p>👋 ¡Hola! Soy el asistente catastral del GAMC. Estoy aquí para ayudarte con información sobre trámites. ¿En qué te puedo ayudar hoy?</p>
                     </div>
+                </div>
+                
+                <!-- Quick Suggestions -->
+                <div class="flex flex-wrap gap-2 ml-11 mb-2 animate-slide-up-stagger" style="animation-delay: 150ms;">
+                    <button class="suggestion-chip bg-white border border-accent-300 text-brand-600 text-sm px-3 py-1.5 rounded-full hover:bg-accent-50 font-medium">Certificado Catastral</button>
+                    <button class="suggestion-chip bg-white border border-accent-300 text-brand-600 text-sm px-3 py-1.5 rounded-full hover:bg-accent-50 font-medium">Visación de Planos</button>
+                    <button class="suggestion-chip bg-white border border-accent-300 text-brand-600 text-sm px-3 py-1.5 rounded-full hover:bg-accent-50 font-medium">Avalúo Catastral</button>
                 </div>
             </div>
         </div>
 
         <!-- Input Area -->
-        <div class="p-4 bg-white border-t border-accent-200 relative z-10">
+        <div class="p-4 bg-white border-t border-accent-200 relative z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <form id="chat-form" class="flex gap-2 relative">
-                <input 
-                    type="text" 
-                    id="user-input" 
-                    class="flex-1 bg-accent-50 border border-haze-300 rounded-full px-5 py-3 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-200 transition-all text-graphite-950 placeholder-haze-400"
-                    placeholder="Ej. ¿Qué requisitos necesito para el certificado catastral?"
-                    autocomplete="off"
-                    required
-                >
+                <div class="relative flex-1">
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        class="w-full bg-accent-50 border border-haze-300 rounded-full pl-5 pr-12 py-3 focus:outline-none input-focus-glow transition-all text-graphite-950 placeholder-haze-400"
+                        placeholder="Escribe tu consulta aquí..."
+                        autocomplete="off"
+                        required
+                    >
+                    <div id="char-counter" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-haze-400 opacity-0 transition-opacity">
+                        <span id="char-count">0</span>
+                    </div>
+                </div>
                 <button 
                     type="submit" 
                     id="send-btn"
-                    class="bg-brand-600 hover:bg-brand-800 text-white rounded-full px-6 py-3 font-semibold transition-colors flex items-center justify-center gap-2"
+                    class="send-btn-glow bg-brand-600 hover:bg-brand-800 text-white rounded-full w-12 h-12 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex-shrink-0"
+                    disabled
                 >
-                    Enviar
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 ml-1">
+                        <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+                    </svg>
                 </button>
             </form>
         </div>
