@@ -9,6 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Estado del historial de mensajes
     let messagesHistory = [];
+    
+    // Generar o recuperar ID de sesión (UUID v4 básico)
+    let sessionId = sessionStorage.getItem('chatSessionId');
+    if (!sessionId) {
+        sessionId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
+        sessionStorage.setItem('chatSessionId', sessionId);
+    }
 
     // Smooth scroll al inicializar
     document.documentElement.style.scrollBehavior = 'smooth';
@@ -63,12 +70,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const bubble = document.createElement('div');
         if (isUser) {
             bubble.className = 'bg-brand-900 text-white p-4 rounded-2xl rounded-tr-none shadow-sm';
+            // Para el usuario, no aplicamos estilos complejos de markdown (usamos texto plano con saltos)
+            bubble.innerHTML = content.replace(/\n/g, '<br>');
         } else {
-            bubble.className = 'bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-graphite-950 border border-accent-200';
+            bubble.className = 'bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-graphite-950 border border-accent-200 markdown-content';
+            
+            // Reemplazar emojis comunes por iconos profesionales de Phosphor
+            let processedContent = content
+                // Documentos / Requisitos
+                .replace(/📄|📋|📝|📁|📂|📑/g, '<i class="ph-bold ph-file-text" style="color: #113a52; margin-right: 4px;"></i>')
+                // Dinero / Costos
+                .replace(/💰|💵|🪙|💳/g, '<i class="ph-bold ph-money" style="color: #113a52; margin-right: 4px;"></i>')
+                // Tiempo / Plazos
+                .replace(/⏱️|⏰|⏲️|📅|📆/g, '<i class="ph-bold ph-clock" style="color: #113a52; margin-right: 4px;"></i>')
+                // Ubicacion / Institución
+                .replace(/📍|🏢|🏛️/g, '<i class="ph-bold ph-buildings" style="color: #113a52; margin-right: 4px;"></i>')
+                // Checklist / Éxito
+                .replace(/✅|✔️|👍/g, '<i class="ph-bold ph-check-circle" style="color: #72ae17; margin-right: 4px;"></i>')
+                // Advertencia / Info / Pasos
+                .replace(/⚠️|❗|❕|ℹ️/g, '<i class="ph-bold ph-info" style="color: #f59e0b; margin-right: 4px;"></i>')
+                // Saludos
+                .replace(/👋|🤝/g, '<i class="ph-bold ph-hand-waving" style="color: #113a52; margin-right: 4px;"></i>')
+                // Pasos (números envueltos como emojis si el LLM los manda)
+                .replace(/👉|➡️/g, '<i class="ph-bold ph-arrow-right" style="color: #113a52; margin-right: 4px;"></i>');
+
+            // Renderizamos la respuesta de la IA (que tiene markdown e iconos) a HTML
+            bubble.innerHTML = marked.parse(processedContent);
         }
-        
-        // Convertir saltos de línea a <br>
-        bubble.innerHTML = content.replace(/\n/g, '<br>');
 
         messageDiv.appendChild(avatar);
         messageDiv.appendChild(bubble);
@@ -138,12 +166,15 @@ document.addEventListener('DOMContentLoaded', () => {
         showTypingIndicator();
 
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch('http://127.0.0.1:8000/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ messages: messagesHistory })
+                body: JSON.stringify({ 
+                    session_id: sessionId,
+                    messages: messagesHistory 
+                })
             });
 
             if (!response.ok) {

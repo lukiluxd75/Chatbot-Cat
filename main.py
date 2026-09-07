@@ -1,12 +1,36 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-import requests
-import json
+"""
+Chatbot Catastral – Entry point de la aplicación FastAPI.
+
+Este archivo se mantiene mínimo: solo inicializa la app, registra
+middleware, monta archivos estáticos e incluye los routers.
+Toda la lógica de negocio reside en el paquete `app/`.
+"""
+
+import logging
+
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
-app = FastAPI()
+from app.routers.chat import router as chat_router
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s │ %(levelname)-7s │ %(name)s │ %(message)s",
+)
+
+# ---------------------------------------------------------------------------
+# Aplicación FastAPI
+# ---------------------------------------------------------------------------
+app = FastAPI(
+    title="Chatbot Catastral – GAMC",
+    description="Backend RAG para el asistente de trámites catastrales.",
+    version="0.2.0",
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -16,55 +40,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Message(BaseModel):
-    role: str
-    content: str
+# ---------------------------------------------------------------------------
+# Routers
+# ---------------------------------------------------------------------------
+app.include_router(chat_router)
 
-class ChatRequest(BaseModel):
-    messages: list[Message]
-
-OLLAMA_URL = "http://localhost:11434/api/chat"
-DEFAULT_MODEL = "gemma4:e4b"
-
-# Prompt de sistema para guiar el comportamiento del asistente
-SYSTEM_PROMPT = """Eres el Asistente Catastral experto en trámites y requisitos del Gobierno Autónomo Municipal de Cochabamba (GAMC).
-Tu objetivo es ayudar a los ciudadanos a conocer los requisitos, papeles faltantes y pasos para realizar trámites específicos de Catastro.
-Responde de manera amable, clara y concisa.
-Si no conoces la respuesta a un trámite específico, indícalo amablemente y sugiere acudir a las oficinas de Catastro correspondientes.
-
-Información base de trámites catastrales (ejemplos):
-1. Certificado Catastral: Requiere Fotocopia de CI, Folio Real actualizado, Testimonio de Propiedad y el último pago de impuestos.
-2. Visación de Planos: Requiere Planos arquitectónicos firmados, Título de Propiedad, Folio Real y Fotocopia de CI.
-3. Avalúo Catastral: Requiere solicitud escrita, Fotocopia de CI, y Certificado Alodial.
-
-Mantén tus respuestas breves y directas."""
-
-@app.post("/api/chat")
-async def chat_endpoint(request: ChatRequest):
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    for msg in request.messages:
-        messages.append({"role": msg.role, "content": msg.content})
-
-    payload = {
-        "model": DEFAULT_MODEL,
-        "messages": messages,
-        "stream": False
-    }
-
-    try:
-        response = requests.post(OLLAMA_URL, json=payload)
-        response.raise_for_status()
-        data = response.json()
-        return {"response": data["message"]["content"]}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+# ---------------------------------------------------------------------------
+# Archivos estáticos & frontend
+# ---------------------------------------------------------------------------
 @app.get("/")
 async def read_index():
     return FileResponse("index.html")
 
 app.mount("/", StaticFiles(directory=".", html=True), name="static")
 
+# ---------------------------------------------------------------------------
+# Ejecución directa
+# ---------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
