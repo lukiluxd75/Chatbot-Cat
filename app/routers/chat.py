@@ -9,12 +9,13 @@ import logging
 import httpx
 from fastapi import APIRouter, HTTPException
 
+from pydantic import ValidationError
+
 from app.config import DEFAULT_MODEL, OLLAMA_URL
-from app.models import ChatRequest, ChatResponse
+from app.models import ChatRequest, ChatResponse, AuditoriaResponse, SearchResult
 from app.services.prompt import ensamblar_system_prompt
 from app.services.search import buscar_tramite
 from app.db.sql_db import obtener_ultimo_tramite_sesion, obtener_tramite, guardar_mensaje_historial
-from app.models import SearchResult
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +86,7 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
         "model": DEFAULT_MODEL,
         "messages": messages,
         "stream": False,
+        "format": "json"
     }
 
     # 7. Llamar a Ollama
@@ -95,15 +97,23 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
             data = response.json()
             bot_reply = data["message"]["content"]
             
+            # Validar que la respuesta es un JSON válido que cumple con el esquema AuditoriaResponse
+            try:
+                auditoria_data = AuditoriaResponse.model_validate_json(bot_reply)
+                bot_reply_final = auditoria_data.model_dump_json()
+            except ValidationError as e:
+                logger.error(f"Error de validación JSON: {e}")
+                raise HTTPException(status_code=500, detail="El modelo no devolvió un JSON válido para auditoría.")
+            
             # 8. Guardar la respuesta de la IA en el historial
             await guardar_mensaje_historial(
                 session_id=session_id,
                 role="assistant",
-                content=bot_reply,
+                content=bot_reply_final,
                 tramite_detectado=resultado_busqueda.tramite_key
             )
             
-            return ChatResponse(response=bot_reply)
+            return ChatResponse(response=bot_reply_final)
             
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="El modelo local no respondió a tiempo.")

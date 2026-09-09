@@ -145,6 +145,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Función para renderizar tarjeta RAG
+    function renderizarTarjetaAuditoria(datos) {
+        const esAprobado = datos.estado && datos.estado.includes('Aprobado');
+        const bgClass = esAprobado ? 'bg-green-50' : 'bg-red-50';
+        const borderClass = esAprobado ? 'border-green-300' : 'border-red-300';
+        const textClass = esAprobado ? 'text-green-900' : 'text-red-900';
+        const titleColor = esAprobado ? 'text-green-800' : 'text-red-800';
+
+        const checkIcon = `<i class="ph-bold ph-check-circle text-green-600 mr-2 mt-1"></i>`;
+        const xIcon = `<i class="ph-bold ph-x-circle text-red-600 mr-2 mt-1"></i>`;
+
+        const presentesHtml = datos.documentos_presentes && datos.documentos_presentes.length > 0 
+            ? datos.documentos_presentes.map(doc => `<li class="flex items-start">${checkIcon}<span>${doc}</span></li>`).join('') 
+            : `<li class="text-gray-500 italic">Ninguno</li>`;
+
+        const faltantesHtml = datos.documentos_faltantes && datos.documentos_faltantes.length > 0 
+            ? datos.documentos_faltantes.map(doc => `<li class="flex items-start">${xIcon}<span>${doc}</span></li>`).join('') 
+            : `<li class="text-gray-500 italic">Ninguno</li>`;
+
+        return `
+            <div class="flex items-start gap-3 max-w-[85%] animate-slide-up-stagger my-2">
+                <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center mt-1 bg-white border border-accent-200 overflow-hidden shadow-sm">
+                    <img src="assets/branding/logo-gamc-cocha.png" alt="IA" class="w-full h-full object-contain p-1">
+                </div>
+                <div class="p-4 rounded-2xl rounded-tl-none shadow-sm border ${bgClass} ${borderClass} ${textClass} w-full">
+                    <h3 class="font-bold text-lg mb-2 border-b pb-2 ${borderClass} ${titleColor}">Dictamen de Auditoría: ${datos.estado}</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <h4 class="font-semibold mb-2">Documentos Presentes</h4>
+                            <ul class="space-y-1 text-sm">
+                                ${presentesHtml}
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2">Documentos Faltantes</h4>
+                            <ul class="space-y-1 text-sm">
+                                ${faltantesHtml}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-t ${borderClass}">
+                        <h4 class="font-semibold mb-1">Observaciones</h4>
+                        <p class="text-sm">${datos.observaciones || 'Sin observaciones.'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     // Enviar mensaje al backend
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -190,7 +241,15 @@ document.addEventListener('DOMContentLoaded', () => {
             removeTypingIndicator();
             // Pequeño delay para permitir que el fade-out se vea antes de añadir el nuevo mensaje
             setTimeout(() => {
-                appendMessage('assistant', botMessage);
+                try {
+                    const datosAuditoria = JSON.parse(botMessage);
+                    const htmlTarjeta = renderizarTarjetaAuditoria(datosAuditoria);
+                    chatContainer.insertAdjacentHTML('beforeend', htmlTarjeta);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                } catch (error) {
+                    // Fallback
+                    appendMessage('assistant', botMessage);
+                }
             }, 300);
 
         } catch (error) {

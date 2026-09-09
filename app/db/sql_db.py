@@ -120,7 +120,9 @@ async def obtener_tramites() -> dict[str, dict[str, Any]]:
                 costo_str = f"{t['costo_moneda']} {t['costo_monto']}"
                 if t["costo_nota"]:
                     costo_str += f" ({t['costo_nota']})"
-
+            elif t["costo_nota"]:
+                costo_str = t["costo_nota"]
+            
             # Formatear tiempo legible
             tiempo_str = ""
             if t["tiempo_min_dias"] and t["tiempo_max_dias"]:

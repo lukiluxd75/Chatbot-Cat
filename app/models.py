@@ -43,3 +43,11 @@ class SearchResult(BaseModel):
     encontrado: bool = Field(
         False, description="Indica si se halló un trámite coincidente"
     )
+
+class AuditoriaResponse(BaseModel):
+    """Respuesta estructurada para el sistema de auditoría catastral."""
+    estado: str = Field(..., description="Estado de la auditoría (Ej: Aprobado, Rechazado, Pendiente)")
+    documentos_presentes: list[str] = Field(default_factory=list, description="Lista de documentos encontrados")
+    documentos_faltantes: list[str] = Field(default_factory=list, description="Lista de documentos faltantes")
+    observaciones: str = Field(..., description="Observaciones generales de la auditoría")
+
