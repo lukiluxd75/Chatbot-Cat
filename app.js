@@ -242,10 +242,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // Pequeño delay para permitir que el fade-out se vea antes de añadir el nuevo mensaje
             setTimeout(() => {
                 try {
-                    const datosAuditoria = JSON.parse(botMessage);
-                    const htmlTarjeta = renderizarTarjetaAuditoria(datosAuditoria);
-                    chatContainer.insertAdjacentHTML('beforeend', htmlTarjeta);
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    const cleanMessage = botMessage.trim();
+                    if (cleanMessage.startsWith('{')) {
+                        const datosAuditoria = JSON.parse(cleanMessage);
+                        if (datosAuditoria.estado) {
+                            const htmlTarjeta = renderizarTarjetaAuditoria(datosAuditoria);
+                            chatContainer.insertAdjacentHTML('beforeend', htmlTarjeta);
+                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                            return;
+                        }
+                    }
+                    // Si no es un objeto con 'estado', lanzamos error para caer al fallback
+                    throw new Error('Not an audit object');
                 } catch (error) {
                     // Fallback
                     appendMessage('assistant', botMessage);

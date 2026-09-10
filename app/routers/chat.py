@@ -85,8 +85,7 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
     payload = {
         "model": DEFAULT_MODEL,
         "messages": messages,
-        "stream": False,
-        "format": "json"
+        "stream": False
     }
 
     # 7. Llamar a Ollama
@@ -97,13 +96,16 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
             data = response.json()
             bot_reply = data["message"]["content"]
             
-            # Validar que la respuesta es un JSON válido que cumple con el esquema AuditoriaResponse
+            # Intentar validar que la respuesta es un JSON válido que cumple con el esquema AuditoriaResponse
+            bot_reply_final = bot_reply
             try:
                 auditoria_data = AuditoriaResponse.model_validate_json(bot_reply)
                 bot_reply_final = auditoria_data.model_dump_json()
-            except ValidationError as e:
-                logger.error(f"Error de validación JSON: {e}")
-                raise HTTPException(status_code=500, detail="El modelo no devolvió un JSON válido para auditoría.")
+            except ValidationError:
+                # Si falla la validación Pydantic, asumimos que es una respuesta en texto (Markdown)
+                pass
+            except Exception:
+                pass
             
             # 8. Guardar la respuesta de la IA en el historial
             await guardar_mensaje_historial(
