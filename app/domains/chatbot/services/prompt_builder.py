@@ -9,8 +9,8 @@ Genera el prompt de sistema que se envía al LLM (Gemma 4) inyectando:
 - Contexto institucional general
 """
 
-from app.models import SearchResult
-from app.db.sql_db import (
+from app.domains.chatbot.presentation.schemas.chat_schemas import SearchResultSchema as SearchResult
+from app.domains.chatbot.infrastructure.postgres_repository import (
     obtener_pasos,
     obtener_excepciones,
     obtener_faq,
@@ -59,40 +59,40 @@ async def ensamblar_system_prompt(resultado_busqueda: SearchResult) -> str:
     
     # 1. Traer información institucional general (siempre presente)
     ctx_institucional = await obtener_contexto_institucional()
-    ctx_text = "\n".join([f"- **{c['titulo']}**: {c['contenido']}" for c in ctx_institucional])
+    ctx_text = "\n".join([f"- **{c['title']}**: {c['content']}" for c in ctx_institucional])
     
     bloque_institucional = f"\n## [CONTEXTO DEL SISTEMA (Información General del GAMC)]\n{ctx_text}\n"
 
     # 2. Si no hay trámite, retornar el base + el institucional + el fallback
-    if not resultado_busqueda.encontrado or not resultado_busqueda.tramite_key:
+    if not resultado_busqueda.is_found or not resultado_busqueda.procedure_code:
         return _SYSTEM_PROMPT_BASE + bloque_institucional + _CONTEXTO_SIN_TRAMITE
 
     # 3. Si HAY trámite, recolectar todo su ecosistema de datos
-    clave = resultado_busqueda.tramite_key
+    clave = resultado_busqueda.procedure_code
     
     # -- Requisitos (ya vienen en el SearchResult)
-    reqs_text = "\n".join(f"  {i}. {req}" for i, req in enumerate(resultado_busqueda.requisitos, start=1))
+    reqs_text = "\n".join(f"  {i}. {req}" for i, req in enumerate(resultado_busqueda.requirements, start=1))
     
     # -- Pasos
     pasos = await obtener_pasos(clave)
-    pasos_text = "\n".join(f"  Paso {p['numero_paso']}: {p['titulo']} - {p['descripcion']}" for p in pasos)
+    pasos_text = "\n".join(f"  Paso {p['step_number']}: {p['title']} - {p['description']}" for p in pasos)
     if not pasos_text: pasos_text = "  (No hay pasos registrados)"
 
     # -- Excepciones
     excepciones = await obtener_excepciones(clave)
-    exc_text = "\n".join(f"  - **Si es {e['caso']}**: {e['descripcion']}. Requisitos extra: {e['requisitos_adicionales']}" for e in excepciones)
+    exc_text = "\n".join(f"  - **Si es {e['case_name']}**: {e['description']}. Requisitos extra: {e['additional_requirements']}" for e in excepciones)
     if not exc_text: exc_text = "  (No aplican casos especiales)"
 
     # -- FAQ (Solo las del trámite)
     faqs = await obtener_faq(clave)
     # Filtramos para no llenar el prompt con FAQs generales si ya tenemos el contexto institucional
-    faq_text = "\n".join(f"  P: {f['pregunta']}\n  R: {f['respuesta']}" for f in faqs if f.get('categoria') != 'general')
+    faq_text = "\n".join(f"  P: {f['question']}\n  R: {f['answer']}" for f in faqs if f.get('category') != 'general')
     if not faq_text: faq_text = "  (No hay preguntas frecuentes específicas)"
 
     # 4. Ensamblar el bloque del trámite
     bloque_tramite = f"""
 ## [CONTEXTO DEL TRÁMITE]
-**Trámite detectado:** {resultado_busqueda.tramite_nombre}
+**Trámite detectado:** {resultado_busqueda.procedure_name}
 
 **1. Requisitos documentales (lista exhaustiva):**
 {reqs_text}

@@ -9,7 +9,8 @@ para facilitar cambios de entorno (dev/staging/prod) sin tocar la lógica.
 # Ollama / Modelo local
 # ---------------------------------------------------------------------------
 OLLAMA_URL: str = "http://localhost:11434/api/chat"
-DEFAULT_MODEL: str = "gemma4:e4b"
+DEFAULT_MODEL: str = "gemma3:latest"
+
 
 # ---------------------------------------------------------------------------
 # Motor de búsqueda difusa
@@ -26,3 +27,12 @@ MYSQL_PORT: int = 3306
 MYSQL_USER: str = "root"
 MYSQL_PASSWORD: str = "1204"
 MYSQL_DATABASE: str = "catastro_gamc"
+
+# ---------------------------------------------------------------------------
+# PostgreSQL – Base de datos catastro_gamc (Opcional)
+# ---------------------------------------------------------------------------
+PG_HOST: str = "localhost"
+PG_PORT: int = 5432
+PG_USER: str = "postgres"
+PG_PASSWORD: str = "1234"
+PG_DATABASE: str = "catastro_gamc"

@@ -13,7 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.routers.chat import router as chat_router
+from app.domains.chatbot.presentation.endpoints.chat_router import router as chat_router
+from app.domains.chatbot.presentation.endpoints.admin_router import router as admin_router
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -35,7 +36,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -44,15 +45,12 @@ app.add_middleware(
 # Routers
 # ---------------------------------------------------------------------------
 app.include_router(chat_router)
+app.include_router(admin_router)
 
 # ---------------------------------------------------------------------------
 # Archivos estáticos & frontend
 # ---------------------------------------------------------------------------
-@app.get("/")
-async def read_index():
-    return FileResponse("index.html")
-
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
+# (HTML estático removido en favor de React Frontend)
 
 # ---------------------------------------------------------------------------
 # Ejecución directa

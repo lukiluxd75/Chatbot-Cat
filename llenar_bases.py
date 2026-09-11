@@ -8,8 +8,8 @@ import logging
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 
-from app.db.sql_db import _get_connection
-from app.services.search import inicializar_vector_db
+from app.domains.chatbot.infrastructure.postgres_repository import _get_connection
+from app.domains.chatbot.services.vector_search import inicializar_vector_db
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)

@@ -12,10 +12,10 @@ from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
 
 from app.config import DEFAULT_MODEL, OLLAMA_URL
-from app.models import ChatRequest, ChatResponse, AuditoriaResponse, SearchResult
-from app.services.prompt import ensamblar_system_prompt
-from app.services.search import buscar_tramite
-from app.db.sql_db import obtener_ultimo_tramite_sesion, obtener_tramite, guardar_mensaje_historial
+from app.domains.chatbot.presentation.schemas.chat_schemas import ChatRequestSchema as ChatRequest, ChatResponseSchema as ChatResponse, AuditResponseSchema as AuditoriaResponse, SearchResultSchema as SearchResult
+from app.domains.chatbot.services.prompt_builder import ensamblar_system_prompt
+from app.domains.chatbot.services.vector_search import buscar_tramite
+from app.domains.chatbot.infrastructure.postgres_repository import obtener_ultimo_tramite_sesion, obtener_tramite, guardar_mensaje_historial
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
     
     # 3. MEMORIA DE ESTADO: Si el usuario hizo una pregunta de seguimiento ("¿y cuánto cuesta?")
     # el buscador no encontrará trámite. En ese caso, miramos de qué hablaba antes en esta sesión.
-    if not resultado_busqueda.encontrado:
+    if not resultado_busqueda.is_found:
         ultimo_clave = await obtener_ultimo_tramite_sesion(session_id)
         if ultimo_clave:
             # Recuperar datos de ese trámite de la base de datos
@@ -50,17 +50,17 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
             if datos_tramite:
                 logger.info(f"Sesión {session_id} - Usando memoria de estado: {ultimo_clave}")
                 resultado_busqueda = SearchResult(
-                    tramite_key=ultimo_clave,
-                    tramite_nombre=datos_tramite["nombre"],
-                    requisitos=datos_tramite["requisitos"],
+                    procedure_code=ultimo_clave,
+                    procedure_name=datos_tramite["name"],
+                    requirements=datos_tramite["procedure_requirement"],
                     score=1.0, # Match heredado
-                    encontrado=True
+                    is_found=True
                 )
 
     logger.info(
         "Búsqueda final: '%s' → %s (score: %.4f)",
         ultimo_mensaje_usuario,
-        resultado_busqueda.tramite_nombre or "SIN MATCH",
+        resultado_busqueda.procedure_name or "SIN MATCH",
         resultado_busqueda.score,
     )
 
@@ -69,9 +69,9 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
         session_id=session_id,
         role="user",
         content=ultimo_mensaje_usuario,
-        tramite_detectado=resultado_busqueda.tramite_key,
-        score_match=resultado_busqueda.score,
-        sin_respuesta=not resultado_busqueda.encontrado
+        detected_procedure=resultado_busqueda.procedure_code,
+        match_score=resultado_busqueda.score,
+        is_unanswered=not resultado_busqueda.is_found
     )
 
     # 5. Ensamblar el system prompt con TODOS los datos enriquecidos
@@ -112,7 +112,7 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
                 session_id=session_id,
                 role="assistant",
                 content=bot_reply_final,
-                tramite_detectado=resultado_busqueda.tramite_key
+                detected_procedure=resultado_busqueda.procedure_code
             )
             
             return ChatResponse(response=bot_reply_final)

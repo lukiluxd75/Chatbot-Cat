@@ -10,8 +10,8 @@ import unicodedata
 import chromadb
 from chromadb.config import Settings
 
-from app.db.sql_db import obtener_tramites
-from app.models import SearchResult
+from app.domains.chatbot.infrastructure.postgres_repository import obtener_tramites
+from app.domains.chatbot.presentation.schemas.chat_schemas import SearchResultSchema as SearchResult
 
 # Inicializamos el cliente de ChromaDB con persistencia local
 chroma_client = chromadb.PersistentClient(path="./chroma_db")
@@ -76,7 +76,7 @@ async def buscar_tramite(consulta_usuario: str) -> SearchResult:
     """
     consulta_norm = _normalizar(consulta_usuario)
     if not consulta_norm:
-        return SearchResult(encontrado=False, score=0.0)
+        return SearchResult(is_found=False, score=0.0)
 
     # Asegurar que la BD vectorial está poblada con los trámites actuales
     await inicializar_vector_db()
@@ -85,7 +85,7 @@ async def buscar_tramite(consulta_usuario: str) -> SearchResult:
     query_embedding = await obtener_embedding(consulta_usuario)
     
     if collection.count() == 0:
-        return SearchResult(encontrado=False, score=0.0)
+        return SearchResult(is_found=False, score=0.0)
         
     resultados = collection.query(
         query_embeddings=[query_embedding],
@@ -93,7 +93,7 @@ async def buscar_tramite(consulta_usuario: str) -> SearchResult:
     )
     
     if not resultados["ids"][0]:
-        return SearchResult(encontrado=False, score=0.0)
+        return SearchResult(is_found=False, score=0.0)
         
     # ChromaDB (con hnsw:space=cosine) devuelve "distancia coseno" (1 - similitud coseno).
     # Convertimos la distancia a un score de similitud donde 1 es idéntico y 0 es ortogonal.
@@ -113,11 +113,11 @@ async def buscar_tramite(consulta_usuario: str) -> SearchResult:
         
         if data:
             return SearchResult(
-                tramite_key=tramite_key,
-                tramite_nombre=data["nombre"],
-                requisitos=data["requisitos"],
+                procedure_code=tramite_key,
+                procedure_name=data.get("name", data.get("nombre")),
+                requirements=data.get("procedure_requirement", data.get("requirements", data.get("requisitos"))),
                 score=round(similitud, 4),
-                encontrado=True,
+                is_found=True,
             )
 
-    return SearchResult(encontrado=False, score=round(similitud, 4))
+    return SearchResult(is_found=False, score=round(similitud, 4))
