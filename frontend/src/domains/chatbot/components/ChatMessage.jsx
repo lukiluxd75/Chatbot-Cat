@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 export default function ChatMessage({ message }) {
     const isBot = message.role === 'assistant';
@@ -43,7 +44,23 @@ export default function ChatMessage({ message }) {
                             <p className="mt-2 text-sm italic">{auditData.observaciones}</p>
                         </div>
                     ) : (
-                        <div className="whitespace-pre-wrap leading-relaxed">{content}</div>
+                        <div className="leading-relaxed">
+                            <ReactMarkdown
+                                components={{
+                                    p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                                    ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-2" {...props} />,
+                                    ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-2" {...props} />,
+                                    li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                                    h1: ({node, ...props}) => <h1 className="text-xl font-bold mb-2 text-brand-800" {...props} />,
+                                    h2: ({node, ...props}) => <h2 className="text-lg font-bold mb-2 text-brand-800" {...props} />,
+                                    h3: ({node, ...props}) => <h3 className="text-md font-bold mb-2 text-brand-800" {...props} />,
+                                    strong: ({node, ...props}) => <strong className="font-bold text-brand-800" {...props} />,
+                                    a: ({node, ...props}) => <a className="text-accent-600 underline" {...props} />
+                                }}
+                            >
+                                {content}
+                            </ReactMarkdown>
+                        </div>
                     )}
                 </div>
             </div>

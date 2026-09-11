@@ -9,7 +9,7 @@ para facilitar cambios de entorno (dev/staging/prod) sin tocar la lógica.
 # Ollama / Modelo local
 # ---------------------------------------------------------------------------
 OLLAMA_URL: str = "http://localhost:11434/api/chat"
-DEFAULT_MODEL: str = "gemma3:latest"
+DEFAULT_MODEL: str = "gemma4:e4b"
 
 
 # ---------------------------------------------------------------------------
@@ -34,5 +34,5 @@ MYSQL_DATABASE: str = "catastro_gamc"
 PG_HOST: str = "localhost"
 PG_PORT: int = 5432
 PG_USER: str = "postgres"
-PG_PASSWORD: str = "1234"
+PG_PASSWORD: str = "8282"
 PG_DATABASE: str = "catastro_gamc"
