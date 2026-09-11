@@ -55,7 +55,12 @@ export default function ChatMessage({ message }) {
                                     h2: ({node, ...props}) => <h2 className="text-lg font-bold mb-2 text-brand-800" {...props} />,
                                     h3: ({node, ...props}) => <h3 className="text-md font-bold mb-2 text-brand-800" {...props} />,
                                     strong: ({node, ...props}) => <strong className="font-bold text-brand-800" {...props} />,
-                                    a: ({node, ...props}) => <a className="text-accent-600 underline" {...props} />
+                                    a: ({node, ...props}) => <a className="text-accent-600 underline" {...props} />,
+                                    img: ({node, ...props}) => (
+                                        <div className="my-3 flex justify-center">
+                                            <img className="max-w-xs md:max-w-sm rounded-lg shadow-md border border-gray-200" {...props} />
+                                        </div>
+                                    )
                                 }}
                             >
                                 {content}

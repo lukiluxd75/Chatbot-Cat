@@ -90,7 +90,7 @@ async def obtener_tramites() -> dict[str, dict[str, Any]]:
             "SELECT id, code, name, description, amount, currency, "
             "cost_note, min_days, max_days, category, "
             "legal_basis, location, requires_inspection, "
-            "deliverable "
+            "deliverable, qr_image "
             "FROM procedure WHERE is_active = 1"
         )
         tramites_rows = cursor.fetchall()
@@ -130,6 +130,10 @@ async def obtener_tramites() -> dict[str, dict[str, Any]]:
                 tiempo_str = (
                     f"{t['min_days']} a {t['max_days']} días hábiles"
                 )
+                
+            qr_images = []
+            if t["qr_image"]:
+                qr_images = t["qr_image"].split("|")
 
             result[code] = {
                 "name": t["name"],
@@ -138,6 +142,7 @@ async def obtener_tramites() -> dict[str, dict[str, Any]]:
                 "description": t["description"] or "",
                 "costo": costo_str,
                 "tiempo_estimado": tiempo_str,
+                "qr_images": qr_images,
             }
 
         cursor.close()

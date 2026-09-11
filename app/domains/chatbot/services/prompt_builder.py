@@ -89,6 +89,19 @@ async def ensamblar_system_prompt(resultado_busqueda: SearchResult) -> str:
     faq_text = "\n".join(f"  P: {f['question']}\n  R: {f['answer']}" for f in faqs if f.get('category') != 'general')
     if not faq_text: faq_text = "  (No hay preguntas frecuentes específicas)"
 
+    import urllib.parse
+    # -- QR Images
+    qr_text = ""
+    if hasattr(resultado_busqueda, 'qr_images') and resultado_busqueda.qr_images:
+        qr_text = "**5. Formularios QR Asociados al Trámite:**\n"
+        qr_text += "ATENCIÓN LLM: DEBES incluir los siguientes códigos QR en tu respuesta explicando al usuario que estos son FORMULARIOS que debe descargar, escanear o llenar. Usa la sintaxis Markdown exactamente como se muestra a continuación:\n"
+        for i, qr in enumerate(resultado_busqueda.qr_images, start=1):
+            # Codificar espacios en la URL para evitar problemas con Markdown
+            encoded_qr = urllib.parse.quote(qr)
+            qr_text += f"![Formulario QR {i}]({encoded_qr})\n"
+    else:
+        qr_text = "**5. Formularios QR Asociados al Trámite:**\n  (No hay formularios QR disponibles)"
+
     # 4. Ensamblar el bloque del trámite
     bloque_tramite = f"""
 ## [CONTEXTO DEL TRÁMITE]
@@ -106,7 +119,9 @@ async def ensamblar_system_prompt(resultado_busqueda: SearchResult) -> str:
 **4. Preguntas Frecuentes Relacionadas:**
 {faq_text}
 
-> RECORDATORIO PARA EL LLM: Esta es la ÚNICA información que puedes dar. No inventes requisitos adicionales ni asumas horarios o costos que no estén escritos aquí.
+{qr_text}
+
+> RECORDATORIO PARA EL LLM: Esta es la ÚNICA información que puedes dar. No inventes requisitos adicionales ni asumas horarios o costos que no estén escritos aquí. Si hay Formularios QR asociados, es tu OBLIGACIÓN mostrarlos en la respuesta e indicarle al ciudadano que debe escanearlos para llenar los formularios correspondientes.
 """
 
     return _SYSTEM_PROMPT_BASE + bloque_institucional + bloque_tramite

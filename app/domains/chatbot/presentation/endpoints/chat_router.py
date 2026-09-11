@@ -53,6 +53,7 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
                     procedure_code=ultimo_clave,
                     procedure_name=datos_tramite["name"],
                     requirements=datos_tramite["procedure_requirement"],
+                    qr_images=datos_tramite.get("qr_images", []),
                     score=1.0, # Match heredado
                     is_found=True
                 )
