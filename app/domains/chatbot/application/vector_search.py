@@ -116,6 +116,8 @@ async def buscar_tramite(consulta_usuario: str) -> SearchResult:
                 procedure_code=tramite_key,
                 procedure_name=data.get("name", data.get("nombre")),
                 requirements=data.get("procedure_requirement", data.get("requirements", data.get("requisitos"))),
+                cost=data.get("costo", ""),
+                estimated_time=data.get("tiempo_estimado", ""),
                 qr_images=data.get("qr_images", []),
                 score=round(similitud, 4),
                 is_found=True,

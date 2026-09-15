@@ -20,11 +20,11 @@ from app.domains.chatbot.infrastructure.postgres_repository import (
 _SYSTEM_PROMPT_BASE = """\
 Eres el Asistente Catastral Oficial del Gobierno Autónomo Municipal de Cochabamba (GAMC).
 
-## Tu rol
-1. Escuchar la "historia" o situación del ciudadano, entender qué tiene y qué necesita (ej. "qué es un registro catastral y cómo lo obtengo si no tengo el folio real").
+## Tu rol y tono
+1. Escuchar la "historia" o situación del ciudadano, entender qué tiene y qué necesita.
 2. Brindar información clara, guiando al usuario sobre qué trámites aplican a su caso.
-3. Auditar documentos SOLO cuando el usuario esté listo para verificar los requisitos de un trámite específico.
-4. Responder a consultas generales y a las opciones: "¿Qué puedes hacer?", "¿Qué áreas abarcas?" y "Contacto".
+3. Auditar documentos SOLO cuando el usuario esté listo para verificar los requisitos de un trámite.
+4. UTILIZAR UN LENGUAJE FORMAL, INSTITUCIONAL Y MUY EDUCADO (tratar de "usted" al ciudadano) en todas tus respuestas. Evita jergas o excesiva confianza.
 
 ## Reglas de formato de respuesta
 - Si estás respondiendo dudas, explicando un proceso, analizando el caso del usuario, o dando información general: RESPONDE EN TEXTO NORMAL (Markdown). ¡NO USES JSON!
@@ -34,7 +34,7 @@ Eres el Asistente Catastral Oficial del Gobierno Autónomo Municipal de Cochabam
   "estado": "Aprobado" o "Rechazado" o "Pendiente",
   "documentos_presentes": ["lista de documentos que el usuario mencionó tener"],
   "documentos_faltantes": ["lista de documentos requeridos que el usuario NO mencionó"],
-  "observaciones": "Mensaje amable indicando qué falta, pasos a seguir o si está todo correcto."
+  "observaciones": "Mensaje formal indicando qué falta, pasos a seguir o si está todo correcto."
 }
 """
 
@@ -103,9 +103,14 @@ async def ensamblar_system_prompt(resultado_busqueda: SearchResult) -> str:
         qr_text = "**5. Formularios QR Asociados al Trámite:**\n  (No hay formularios QR disponibles)"
 
     # 4. Ensamblar el bloque del trámite
+    costo_text = f"**Costo:** {resultado_busqueda.cost}" if resultado_busqueda.cost else "**Costo:** No especificado en la base de datos."
+    tiempo_text = f"**Tiempo estimado:** {resultado_busqueda.estimated_time}" if resultado_busqueda.estimated_time else "**Tiempo estimado:** No especificado."
+
     bloque_tramite = f"""
 ## [CONTEXTO DEL TRÁMITE]
 **Trámite detectado:** {resultado_busqueda.procedure_name}
+{costo_text}
+{tiempo_text}
 
 **1. Requisitos documentales (lista exhaustiva):**
 {reqs_text}
@@ -121,7 +126,7 @@ async def ensamblar_system_prompt(resultado_busqueda: SearchResult) -> str:
 
 {qr_text}
 
-> RECORDATORIO PARA EL LLM: Esta es la ÚNICA información que puedes dar. No inventes requisitos adicionales ni asumas horarios o costos que no estén escritos aquí. Si hay Formularios QR asociados, es tu OBLIGACIÓN mostrarlos en la respuesta e indicarle al ciudadano que debe escanearlos para llenar los formularios correspondientes.
+> RECORDATORIO PARA EL LLM: Esta es la ÚNICA información que puedes dar. No inventes requisitos adicionales ni asumas horarios o costos que no estén escritos aquí. Si te preguntan por costos, usa estrictamente el Costo provisto arriba. Si hay Formularios QR asociados, es tu OBLIGACIÓN mostrarlos en la respuesta e indicarle al ciudadano que debe escanearlos para llenar los formularios correspondientes.
 """
 
     return _SYSTEM_PROMPT_BASE + bloque_institucional + bloque_tramite

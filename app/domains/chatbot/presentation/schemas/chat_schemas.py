@@ -27,6 +27,8 @@ class SearchResultSchema(BaseModel):
     procedure_code: str | None = None
     procedure_name: str | None = None
     requirements: list[str] = Field(default_factory=list)
+    cost: str | None = None
+    estimated_time: str | None = None
     qr_images: list[str] = Field(default_factory=list)
     score: float = 0.0
     is_found: bool = False
