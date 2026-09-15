@@ -60,3 +60,28 @@ def update_procedure(code: str, data: ProcedureUpdate):
     finally:
         from app.domains.chatbot.infrastructure.postgres_repository import _release_connection
         _release_connection(conn)
+
+@router.get("/feedback")
+def get_feedback():
+    """Retorna la lista de retroalimentación recibida."""
+    conn = _get_connection()
+    try:
+        import psycopg2.extras
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute(
+            """
+            SELECT id, session_id, role, content, created_at, detected_procedure, match_score, feedback, feedback_comment 
+            FROM chat_history 
+            WHERE feedback IS NOT NULL 
+            ORDER BY created_at DESC
+            """
+        )
+        rows = cursor.fetchall()
+        cursor.close()
+        return rows
+    except Exception as e:
+        logger.error(f"Error fetching feedback: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching feedback")
+    finally:
+        from app.domains.chatbot.infrastructure.postgres_repository import _release_connection
+        _release_connection(conn)

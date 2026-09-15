@@ -9,7 +9,9 @@ para facilitar cambios de entorno (dev/staging/prod) sin tocar la lógica.
 # Ollama / Modelo local
 # ---------------------------------------------------------------------------
 OLLAMA_URL: str = "http://localhost:11434/api/chat"
+OLLAMA_GENERATE_URL: str = "http://localhost:11434/api/generate"
 DEFAULT_MODEL: str = "gemma4:e4b"
+VLM_MODEL: str = "qwen3-vl:4b"
 
 
 # ---------------------------------------------------------------------------

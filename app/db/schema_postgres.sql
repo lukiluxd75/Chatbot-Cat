@@ -195,7 +195,8 @@ CREATE TABLE IF NOT EXISTS chat_history (
     detected_procedure  VARCHAR(100),
     match_score        DECIMAL(5,4),
     is_unanswered      SMALLINT NOT NULL DEFAULT 0,
-    feedback           VARCHAR(20)
+    feedback           VARCHAR(20),
+    feedback_comment   TEXT
 );
 CREATE INDEX idx_historial_session ON chat_history (session_id);
 CREATE INDEX idx_historial_timestamp ON chat_history (created_at);

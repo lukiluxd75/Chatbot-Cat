@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 class MessageSchema(BaseModel):
@@ -10,6 +12,16 @@ class ChatRequestSchema(BaseModel):
 
 class ChatResponseSchema(BaseModel):
     response: str
+    message_id: int | None = None
+
+class FeedbackRequestSchema(BaseModel):
+    message_id: int
+    feedback: Literal["positive", "negative"]
+    comment: str | None = None
+
+class VisionRequestSchema(BaseModel):
+    session_id: str = Field("default_session")
+    prompt: str = Field("", description="Texto opcional del usuario acompañando la imagen")
 
 class SearchResultSchema(BaseModel):
     procedure_code: str | None = None

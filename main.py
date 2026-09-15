@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.domains.chatbot.presentation.endpoints.chat_router import router as chat_router
 from app.domains.chatbot.presentation.endpoints.admin_router import router as admin_router
+from app.domains.ingesta.presentation.endpoints.ingesta_router import router as ingesta_router
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -46,6 +47,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 app.include_router(chat_router)
 app.include_router(admin_router)
+app.include_router(ingesta_router)
 
 # ---------------------------------------------------------------------------
 # Archivos estáticos & frontend

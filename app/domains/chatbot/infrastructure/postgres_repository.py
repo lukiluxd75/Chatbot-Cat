@@ -333,21 +333,45 @@ async def guardar_mensaje_historial(
     detected_procedure: str | None = None,
     match_score: float | None = None,
     is_unanswered: bool = False,
-) -> None:
-    """Guarda un mensaje en el historial de conversaciones."""
+) -> int | None:
+    """Guarda un mensaje en el historial de conversaciones y retorna el ID insertado."""
     conn = _get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO chat_history "
             "(session_id, role, content, detected_procedure, match_score, is_unanswered) "
-            "VALUES (%s, %s, %s, %s, %s, %s)",
+            "VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
             (session_id, role, content, detected_procedure, match_score,
              1 if is_unanswered else 0),
         )
+        row = cursor.fetchone()
         cursor.close()
+        return row[0] if row else None
     finally:
         _release_connection(conn)
+
+
+async def guardar_feedback(message_id: int, feedback: str, comment: str | None = None) -> bool:
+    """
+    Actualiza la columna feedback (y opcionalmente feedback_comment)
+    de un mensaje en chat_history.
+    feedback debe ser 'positive' o 'negative'.
+    Retorna True si se actualizó correctamente.
+    """
+    conn = _get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE chat_history SET feedback = %s, feedback_comment = %s WHERE id = %s",
+            (feedback, comment, message_id),
+        )
+        updated = cursor.rowcount > 0
+        cursor.close()
+        return updated
+    finally:
+        _release_connection(conn)
+
 
 async def obtener_ultimo_tramite_sesion(session_id: str) -> str | None:
     """Recupera la code del último trámite detectado para una sesión."""
